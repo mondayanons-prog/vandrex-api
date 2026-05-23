@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS/IDE
+.DS_Store
+.vscode/
+
+# Build/Cache
+dist/
+.eslintcache
