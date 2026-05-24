@@ -11,7 +11,11 @@ const app = express();
 
 const corsOptions = {
   credentials: true,
-  origin: ["http://localhost:3000", "https://localhost:3000"],
+  origin: [
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "https://vandrex.vercel.app",
+  ],
 };
 app.use(cors(corsOptions));
 
@@ -19,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.set('trust proxy', 1); 
+app.set("trust proxy", 1);
 
 app.use(jwtAuth.normalAuthWithCookie);
 
