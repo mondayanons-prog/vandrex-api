@@ -5,9 +5,16 @@ import routes from "./routes/routes.js";
 import jwtAuthentification from "./middlewares/jwt.js";
 import cookieParser from "cookie-parser";
 import jwtAuth from "./middlewares/jwt.js";
+import walletRoutes from "./routes/walletRoutes.js";
+import webhookRoutes from "./routes/webhookRoutes.js";
 // import multer from "multer";
 
 const app = express();
+
+
+// Webhook route MUST use raw body — register BEFORE json middleware
+app.use("/api/webhook", express.raw({ type: "application/json" }), webhookRoutes);
+
 
 const corsOptions = {
   credentials: true,
@@ -30,7 +37,7 @@ app.use(jwtAuth.normalAuthWithCookie);
 const isAuthenticated = jwtAuth.isAuthenticated;
 
 app.use("/api", routes);
-
+app.use("/api/wallet", walletRoutes);
 // app.use((err, req, res, next) => {
 //   if (err instanceof multer.MulterError) {
 //     if (err.code === "LIMIT_FILE_SIZE") {
