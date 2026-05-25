@@ -10,6 +10,9 @@ export const flutterwaveWebhook = async (req, res) => {
     // ── STEP 1: Verify webhook signature ──────────────────────────
     const secretHash = process.env.FLW_SECRET_HASH;
     const incomingHash = req.headers["verif-hash"];
+    console.log(
+      `Debug Webhook - Expected: '${secretHash}', Received: '${incomingHash}'`,
+    );
 
     if (!incomingHash || incomingHash !== secretHash) {
       console.warn("Webhook rejected: invalid signature");
@@ -59,21 +62,19 @@ export const flutterwaveWebhook = async (req, res) => {
         headers: {
           Authorization: `Bearer ${process.env.FLW_SECRET}`,
         },
-      }
+      },
     );
 
     const verifiedData = verifyResponse.data?.data;
 
     // ── STEP 7: Validate amount and currency match ─────────────────
-    const amountMatches =
-      Number(verifiedData.amount) === Number(tx.amount);
-    const currencyMatches =
-      verifiedData.currency === tx.currency;
+    const amountMatches = Number(verifiedData.amount) === Number(tx.amount);
+    const currencyMatches = verifiedData.currency === tx.currency;
 
     if (!amountMatches || !currencyMatches) {
       console.error(
         `Webhook: amount/currency mismatch for tx_ref=${txRef}. ` +
-        `Expected ${tx.amount} ${tx.currency}, got ${verifiedData.amount} ${verifiedData.currency}`
+          `Expected ${tx.amount} ${tx.currency}, got ${verifiedData.amount} ${verifiedData.currency}`,
       );
       await db("transactions")
         .where({ tx_ref: txRef })
@@ -102,20 +103,25 @@ export const flutterwaveWebhook = async (req, res) => {
         .increment("balance", Number(tx.amount))
         .update({ updated_at: new Date() });
 
-      await trx("transactions").where({ tx_ref: txRef }).update({
-        status: "successful",
-        flw_ref: flwRef || null,
-        processed: true,
-      });
+      await trx("transactions")
+        .where({ tx_ref: txRef })
+        .update({
+          status: "successful",
+          flw_ref: flwRef || null,
+          processed: true,
+        });
     });
 
     console.log(
-      `Wallet credited: user=${tx.user_id}, amount=${tx.amount}, tx_ref=${txRef}`
+      `Wallet credited: user=${tx.user_id}, amount=${tx.amount}, tx_ref=${txRef}`,
     );
 
     return res.status(200).end();
   } catch (err) {
-    console.error("flutterwaveWebhook error:", err?.response?.data || err.message);
+    console.error(
+      "flutterwaveWebhook error:",
+      err?.response?.data || err.message,
+    );
     return res.status(500).end();
   }
 };
