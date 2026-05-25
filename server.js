@@ -36,8 +36,8 @@ app.use(jwtAuth.normalAuthWithCookie);
 
 const isAuthenticated = jwtAuth.isAuthenticated;
 
-app.use("/api", routes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api", routes);
 // app.use((err, req, res, next) => {
 //   if (err instanceof multer.MulterError) {
 //     if (err.code === "LIMIT_FILE_SIZE") {
