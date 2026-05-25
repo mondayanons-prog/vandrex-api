@@ -37,7 +37,7 @@ export const fundWallet = async (req, res) => {
         tx_ref: txRef,
         amount: Number(amount),
         currency,
-        redirect_url: `${process.env.APP_URL}/payment/callback`,
+        redirect_url: `${process.env.APP_URL}/dashboard`,
         customer: {
           email,
           user_id,
