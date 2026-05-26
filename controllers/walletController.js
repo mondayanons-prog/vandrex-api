@@ -31,21 +31,28 @@ export const fundWallet = async (req, res) => {
     });
 
     // Initialize Flutterwave payment
+    // Initialize Flutterwave payment
     const flwResponse = await axios.post(
       "https://api.flutterwave.com/v3/payments",
       {
         tx_ref: txRef,
         amount: Number(amount),
-        currency,
-        redirect_url: `${process.env.APP_URL}/dashboard`,
+        currency: currency || "NGN", 
+        payment_options: "card, banktransfer, ussd", 
+        redirect_url: `${process.env.APP_URL}/dashboard`, // Ensure this is a full URL in production
         customer: {
-          email,
-          user_id,
+          email: email,
+          name: req.user.name || "Vandrex Customer", 
+          phonenumber: req.user.phone || "00000000000" 
         },
-        meta: { user_id },
+        meta: { 
+          user_id: user_id 
+        },
         customizations: {
-          title: "Vandrex Wallet Funding",
-          description: "Fund your wallet",
+          title: "Vandrex", // Keep it short and punchy
+          description: "Wallet Funding",
+          // ADD YOUR LOGO URL HERE:
+          logo: "https://vandrex.vercel.app/vandrex-logo.png", 
         },
       },
       {

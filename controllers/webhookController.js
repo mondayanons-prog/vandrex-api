@@ -97,19 +97,37 @@ export const flutterwaveWebhook = async (req, res) => {
 
     // ── STEP 9: Credit wallet atomically + mark tx processed ──────
     // Using a Knex transaction to ensure both updates succeed or both roll back
+    // ── STEP 9: Credit wallet atomically + mark tx processed ──────
     await db.transaction(async (trx) => {
-      await trx("wallets")
-        .where({ user_id: tx.user_id })
-        .increment("balance", Number(tx.amount))
-        .update({ updated_at: new Date() });
+      // 1. Check if the user already has a wallet
+      const wallet = await trx("wallets").where({ user_id: tx.user_id }).first();
 
-      await trx("transactions")
-        .where({ tx_ref: txRef })
-        .update({
-          status: "successful",
-          flw_ref: flwRef || null,
-          processed: true,
+      if (wallet) {
+        // 2a. Wallet exists -> Update balance
+        await trx("wallets")
+          .where({ user_id: tx.user_id })
+          .update({ 
+             balance: Number(wallet.balance) + Number(tx.amount),
+             updated_at: new Date() // Force timestamp update on modification
+          });
+      } else {
+        // 2b. Wallet DOES NOT exist -> Create it 
+        await trx("wallets").insert({
+          user_id: tx.user_id,
+          currency: tx.currency,
+          balance: Number(tx.amount)
+          // Look how clean this is! 
+          // wallet_id automatically gets gen_random_uuid()
+          // updated_at automatically gets NOW()
         });
+      }
+
+      // 3. Mark transaction as successful
+      await trx("transactions").where({ tx_ref: txRef }).update({
+        status: "successful",
+        flw_ref: flwRef || null,
+        processed: true,
+      });
     });
 
     console.log(
